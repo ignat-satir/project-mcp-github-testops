@@ -1,0 +1,15 @@
+{
+  "name": "project-mcp-github-testops",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --reporters=\"default\" --reporters=\"jest-allure2-reporter\" --outputDirectory=allure-results"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "jest-allure2-reporter": "^2.2.6"
+  }
+}

@@ -1,0 +1,51 @@
+name: Test & Report            # имя workflow видно во вкладке Actions
+
+# Когда запускать
+on:
+  push:                         # каждое изменение кода
+  workflow_dispatch:            # запуск «по кнопке» (нужен для TestOps)
+    inputs:
+      ALLURE_JOB_RUN_ID:
+        description: ":)"      # служебные поля TestOps, оставляем
+      ALLURE_USERNAME:
+        description: ":)"
+
+# Переменные окружения
+env:
+  ALLURE_ENDPOINT: https://testing.qatools.cloud
+  ALLURE_PROJECT_ID: 1755           # ← замените на свой ID проекта
+  ALLURE_RESULTS: allure-results # папка, куда тесты пишут результаты Allure
+
+jobs:
+  test:
+    runs-on: ubuntu-latest       # GitHub выдаст свежий Ubuntu‑runner
+
+    steps:
+
+    - name: Check Allure Token
+    run: |
+      if [ -z "${{ secrets.ALLURE_TOKEN }}" ]; then
+        echo "ALLURE_TOKEN secret is missing"
+        exit 1
+      fi
+
+    - name: Клонируем код
+      uses: actions/checkout@v3
+
+    - name: Ставим Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18         # версия LTS подходит для Jest
+
+    - name: Ставим зависимости
+      run: npm ci                # быстрее, чем npm install, берёт версии из package‑lock.json
+
+    - name: Ставим allurectl
+      uses: allure-framework/setup-allurectl@v1
+      with:
+        allure-endpoint: ${{ env.ALLURE_ENDPOINT }}
+        allure-token: ${{ secrets.ALLURE_TOKEN }}
+        allure-project-id: ${{ env.ALLURE_PROJECT_ID }}
+
+    - name: Запускаем тесты
+      run: allurectl watch -- npm test
