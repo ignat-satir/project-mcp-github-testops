@@ -18,34 +18,33 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest       # GitHub выдаст свежий Ubuntu‑runner
+    runs-on: ubuntu-latest
 
     steps:
+      - name: Check Allure Token
+        run: |
+          if [ -z "${{ secrets.ALLURE_TOKEN }}" ]; then
+            echo "ALLURE_TOKEN secret is missing"
+            exit 1
+          fi
 
-    - name: Check Allure Token
-    run: |
-      if [ -z "${{ secrets.ALLURE_TOKEN }}" ]; then
-        echo "ALLURE_TOKEN secret is missing"
-        exit 1
-      fi
+      - name: Клонируем код
+        uses: actions/checkout@v3
 
-    - name: Клонируем код
-      uses: actions/checkout@v3
+      - name: Ставим Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Ставим Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18         # версия LTS подходит для Jest
+      - name: Ставим зависимости
+        run: npm ci
 
-    - name: Ставим зависимости
-      run: npm ci                # быстрее, чем npm install, берёт версии из package‑lock.json
+      - name: Ставим allurectl
+        uses: allure-framework/setup-allurectl@v1
+        with:
+          allure-endpoint: ${{ env.ALLURE_ENDPOINT }}
+          allure-token: ${{ secrets.ALLURE_TOKEN }}
+          allure-project-id: ${{ env.ALLURE_PROJECT_ID }}
 
-    - name: Ставим allurectl
-      uses: allure-framework/setup-allurectl@v1
-      with:
-        allure-endpoint: ${{ env.ALLURE_ENDPOINT }}
-        allure-token: ${{ secrets.ALLURE_TOKEN }}
-        allure-project-id: ${{ env.ALLURE_PROJECT_ID }}
-
-    - name: Запускаем тесты
-      run: allurectl watch -- npm test
+      - name: Запускаем тесты
+        run: allurectl watch -- npm test
