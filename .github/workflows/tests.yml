@@ -15,6 +15,7 @@ env:
   ALLURE_ENDPOINT: https://testing.qatools.cloud
   ALLURE_PROJECT_ID: 1755           # ← замените на свой ID проекта
   ALLURE_RESULTS: allure-results # папка, куда тесты пишут результаты Allure
+  ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
 
 jobs:
   test:
@@ -23,7 +24,7 @@ jobs:
     steps:
       - name: Check Allure Token
         run: |
-          if [ -z "${{ secrets.ALLURE_TOKEN }}" ]; then
+          if [ -z "$ALLURE_TOKEN" ]; then
             echo "ALLURE_TOKEN secret is missing"
             exit 1
           fi
@@ -43,7 +44,7 @@ jobs:
         uses: allure-framework/setup-allurectl@v1
         with:
           allure-endpoint: ${{ env.ALLURE_ENDPOINT }}
-          allure-token: ${{ secrets.ALLURE_TOKEN }}
+          allure-token: ${{ env.ALLURE_TOKEN }}
           allure-project-id: ${{ env.ALLURE_PROJECT_ID }}
 
       - name: Запускаем тесты
